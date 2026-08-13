@@ -18,6 +18,10 @@ jobs:
       - run: black --check .
       - run: mypy control_probe
       - run: pytest --cov=control_probe --cov-report=term-missing
+      - run: python -m build
       - run: control-probe run --spec specs/reserve_at_par.yaml --adapter fixture --fixture-file tests/fixtures/reserve_pass.json
       - run: control-probe run --spec specs/nav_integrity.yaml --adapter fixture --fixture-file tests/fixtures/nav_stale.json || true
       - run: control-probe validate --spec specs/redemption_at_par.yaml
+      - run: twine check dist/*
+      - run: docker build -t control-probe:ci .
+      - run: docker run --rm control-probe:ci validate --spec specs/reserve_at_par.yaml

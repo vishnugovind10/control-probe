@@ -1,0 +1,22 @@
+name: Release Check
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: control-probe-quality-gate
+      - run: python -m build
+      - run: twine check dist/*
+      - run: docker build -t control-probe:release-check .
+      - run: docker run --rm control-probe:release-check validate --spec specs/reserve_at_par.yaml

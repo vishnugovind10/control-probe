@@ -2,8 +2,7 @@
 
 Verify that digital asset control specifications hold under stress, not just under normal conditions.
 
-[![CI](https://github.com/control-probe/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/control-probe/control-probe/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/control-probe)](https://pypi.org/project/control-probe/)
+[![CI](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## The problem
@@ -15,7 +14,7 @@ Regulated financial institutions deploying tokenized funds, stablecoins, and set
 ## Quick start
 
 ```bash
-pip install -e ".[dev]"
+pip install git+https://github.com/vishnugovind10/control-probe.git
 control-probe run --spec specs/reserve_at_par.yaml --adapter fixture --fixture-file tests/fixtures/reserve_pass.json
 ```
 
@@ -85,6 +84,26 @@ Exit codes:
 `fixture` reads deterministic JSON values by metric ID. Use it for offline testing, CI, demonstrations, and controls that require off-chain data.
 
 `evm` reads public EVM state through Web3.py. It currently supports ERC-20 `totalSupply`, ERC-20 `balanceOf`, and literal parameters. Price adapters and Multicall3 batching are roadmap items.
+
+## Deployable Paths
+
+Source checkout:
+
+```bash
+pip install -e ".[dev]"
+control-probe-quality-gate
+python -m build
+twine check dist/*
+```
+
+Container:
+
+```bash
+docker build -t control-probe:local .
+docker run --rm control-probe:local validate --spec specs/reserve_at_par.yaml
+```
+
+Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs/INSTITUTIONAL_READINESS.md), [docs/OPERATIONS.md](docs/OPERATIONS.md), and [docs/CONTROL_MAPPING.md](docs/CONTROL_MAPPING.md).
 
 ## Limitations
 

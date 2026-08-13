@@ -68,3 +68,8 @@ def test_expression_evaluator_supports_chained_comparisons() -> None:
 def test_expression_evaluator_rejects_unsupported_operator() -> None:
     with pytest.raises(ExpressionError, match="unsupported"):
         evaluate_expression("a // 2 == 1", {"a": 2.0})
+
+
+def test_expression_evaluator_rejects_missing_metric() -> None:
+    with pytest.raises(ExpressionError, match="missing metric"):
+        evaluate_expression("a > 0", {})

@@ -14,24 +14,27 @@ dependencies = [
     "pyyaml>=6.0",
     "pydantic>=2.0",
     "web3>=6.0",
-    "rich>=13.0",
+    "rich>=14.3.3,<15",
 ]
 
 [project.optional-dependencies]
 dev = [
     "black",
+    "build",
     "mypy",
     "pytest>=8.0",
     "pytest-cov",
     "ruff",
+    "twine>=7.0",
 ]
 
 [project.scripts]
 control-probe = "control_probe.cli:app"
+control-probe-quality-gate = "control_probe.quality_gate:main"
 
 [project.urls]
-Repository = "https://github.com/control-probe/control-probe"
-Issues = "https://github.com/control-probe/control-probe/issues"
+Repository = "https://github.com/vishnugovind10/control-probe"
+Issues = "https://github.com/vishnugovind10/control-probe/issues"
 
 [tool.black]
 line-length = 88
