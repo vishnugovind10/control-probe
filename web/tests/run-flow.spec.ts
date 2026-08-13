@@ -56,14 +56,16 @@ test("Run submits institutional form with multiple dropdown scenarios", async ({
   await page.goto("/");
 
   await expect(page.getByText("Reserve assurance workspace")).toBeVisible();
-  await page.getByLabel("Scenario pack").selectOption("incident-response");
+  await expect(page.getByText("Evidence package readiness")).toBeVisible();
+  await expect(page.getByText("Readiness checklist")).toBeVisible();
+  await expect(page.getByText("Governance notes")).toBeVisible();
+  await page.getByLabel("Scenario pack").selectOption("assurance-review");
   await page.getByLabel("Control ID").fill("custom-control-test");
   await page.getByLabel("Control name").fill("Custom Reserve Probe");
   await page.getByLabel("Token supply").fill("100");
   await page.getByLabel("Reserve assets").fill("120");
   await page.getByLabel("Minimum buffer ratio").fill("1.1");
   await page.getByLabel("Preset").nth(1).selectOption("liquidity-stress");
-  await page.getByRole("button", { name: "Add scenario" }).click();
   await page.getByLabel("Preset").last().selectOption("operational-freeze");
 
   await expect(page.getByText("5 submitted scenarios")).toBeVisible();
@@ -75,7 +77,7 @@ test("Run submits institutional form with multiple dropdown scenarios", async ({
   expect(submittedSpec.controlId).toBe("custom-control-test");
   expect(submittedSpec.scenarios).toHaveLength(5);
   expect(submittedSpec.scenarios[1].name).toBe("liquidity-stress");
-  expect(submittedSpec.scenarios[4].name).toContain("operational-freeze");
+  expect(submittedSpec.scenarios[4].name).toBe("operational-freeze");
   expect(submittedFixture.reserveAssets).toBe(120);
   await expect(page.getByRole("cell", { name: "Baseline observation" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "Liquidity stress" })).toBeVisible();
@@ -83,4 +85,5 @@ test("Run submits institutional form with multiple dropdown scenarios", async ({
   await expect(page.locator(".scenario-table__row--pass")).toContainText("PASS");
   await expect(page.locator(".scenario-table__row--fail")).toHaveCount(2);
   await expect(page.getByText("API result custom-control-test")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/named firm/i);
 });

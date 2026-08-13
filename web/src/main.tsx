@@ -3,13 +3,17 @@ import { createRoot } from "react-dom/client";
 import {
   Activity,
   ArrowRight,
+  BookOpenCheck,
   Building2,
   CheckCircle2,
   ClipboardCheck,
   Database,
+  FileCheck2,
   FileJson,
   Layers3,
+  LockKeyhole,
   Play,
+  Scale,
   ShieldCheck,
   SlidersHorizontal,
   TriangleAlert,
@@ -114,6 +118,20 @@ const SCENARIO_PRESETS: ScenarioPreset[] = [
 
 const SCENARIO_PACKS: ScenarioPack[] = [
   {
+    id: "assurance-review",
+    label: "External assurance review",
+    controlName: "Reserve Completeness Evidence Dossier",
+    reserveAssets: 10_750_000,
+    minimumBufferRatio: 1.08,
+    scenarios: [
+      SCENARIO_PRESETS[0],
+      SCENARIO_PRESETS[1],
+      SCENARIO_PRESETS[2],
+      SCENARIO_PRESETS[3],
+      SCENARIO_PRESETS[4],
+    ],
+  },
+  {
     id: "committee-review",
     label: "Risk committee review",
     controlName: "Reserve Completeness Under Web Stress",
@@ -151,6 +169,48 @@ const SCENARIO_PACKS: ScenarioPack[] = [
       SCENARIO_PRESETS[4],
       SCENARIO_PRESETS[5],
     ],
+  },
+];
+
+const DOSSIER_ITEMS = [
+  {
+    label: "Control objective",
+    value: "Reserve assets remain above outstanding supply plus approved buffer.",
+  },
+  {
+    label: "Evidence source",
+    value: "Submitted fixture payload or read-only implementation adapter output.",
+  },
+  {
+    label: "Reperformance",
+    value: "Serverless API returns deterministic scenario-level JSON results.",
+  },
+  {
+    label: "Exception path",
+    value: "Any critical failure is isolated by scenario and preserved in output.",
+  },
+];
+
+const REVIEW_CHECKS = [
+  "Control ID and assertion are explicit.",
+  "Data source boundary is stated before execution.",
+  "Scenario shocks are visible and reproducible.",
+  "Pass/fail status is computed, not narrated.",
+  "Generated evidence includes timestamp and control reference.",
+];
+
+const GOVERNANCE_POINTS = [
+  {
+    label: "Disclosure boundary",
+    value: "Synthetic defaults; no production balances, credentials, or private keys.",
+  },
+  {
+    label: "Review posture",
+    value: "Technical evidence package for engineering and control-owner review.",
+  },
+  {
+    label: "Residual risk",
+    value: "Point-in-time evaluation; not a legal opinion or assurance sign-off.",
   },
 ];
 
@@ -360,15 +420,17 @@ function App() {
             <Building2 size={16} aria-hidden="true" />
             Reserve assurance workspace
           </div>
-          <h1 id="page-title">Run control probes with decision-grade evidence.</h1>
+          <h1 id="page-title">Prepare control evidence for external review.</h1>
           <p>
-            Configure reserve inputs, select a scenario pack, and submit multiple
-            stress cases to a Vercel serverless probe API.
+            Configure reserve inputs, select a review scenario pack, and submit
+            reproducible stress cases to a serverless probe API with clear
+            evidence boundaries.
           </p>
           <div className="workflow-strip" aria-label="Control workflow">
             <WorkflowStep icon={<Database size={16} />} label="Fixture" />
             <WorkflowStep icon={<Layers3 size={16} />} label="Scenarios" />
             <WorkflowStep icon={<ClipboardCheck size={16} />} label="Evidence" />
+            <WorkflowStep icon={<BookOpenCheck size={16} />} label="Review" />
           </div>
         </div>
         <aside className="probe-card" aria-label="Reserve control probe">
@@ -411,7 +473,7 @@ function App() {
             <h2>Inputs, controls, and scenario pack</h2>
           </div>
           <p>
-            Use the dropdown presets for common institutional reviews, then
+            Use the dropdown presets for assurance-style review packages, then
             refine individual stress cases before execution.
           </p>
         </div>
@@ -518,6 +580,54 @@ function App() {
         </form>
       </section>
 
+      <section className="dossier-section" aria-label="Review dossier">
+        <div className="section-heading">
+          <div>
+            <span className="panel-label">
+              <FileCheck2 size={16} aria-hidden="true" />
+              Review dossier
+            </span>
+            <h2>Evidence package readiness</h2>
+          </div>
+          <p>
+            The page presents the minimum context an external reviewer expects:
+            objective, source boundary, reperformance path, and exception trail.
+          </p>
+        </div>
+        <div className="dossier-grid">
+          {DOSSIER_ITEMS.map((item) => (
+            <EvidenceCard key={item.label} label={item.label} value={item.value} />
+          ))}
+        </div>
+        <div className="review-layout">
+          <div className="review-panel">
+            <div className="review-panel__header">
+              <Scale size={18} aria-hidden="true" />
+              <h3>Readiness checklist</h3>
+            </div>
+            <ul className="check-list">
+              {REVIEW_CHECKS.map((item) => (
+                <li key={item}>
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="review-panel">
+            <div className="review-panel__header">
+              <LockKeyhole size={18} aria-hidden="true" />
+              <h3>Governance notes</h3>
+            </div>
+            <div className="governance-list">
+              {GOVERNANCE_POINTS.map((item) => (
+                <EvidenceCard key={item.label} label={item.label} value={item.value} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="results-section" aria-label="Probe results">
         <div className="section-heading">
           <div>
@@ -570,6 +680,15 @@ function WorkflowStep({ icon, label }: { icon: React.ReactNode; label: string })
     <div className="workflow-step">
       {icon}
       <span>{label}</span>
+    </div>
+  );
+}
+
+function EvidenceCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="evidence-card">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

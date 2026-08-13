@@ -112,6 +112,7 @@ select {
 
 .hero-copy,
 .probe-card,
+.dossier-section,
 .input-section,
 .results-section,
 .evidence-strip {
@@ -283,6 +284,7 @@ p {
 }
 
 .input-section,
+.dossier-section,
 .results-section,
 .evidence-strip {
   margin-top: var(--space-xl);
@@ -366,6 +368,86 @@ p {
 
 .scenario-fieldset legend {
   padding: 0 var(--space-xs);
+}
+
+.dossier-grid,
+.review-layout {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.dossier-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: var(--space-lg);
+}
+
+.review-layout {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.evidence-card,
+.review-panel {
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+}
+
+.evidence-card {
+  display: grid;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+
+.evidence-card span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.evidence-card strong {
+  color: var(--color-text);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.review-panel {
+  padding: var(--space-lg);
+}
+
+.review-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  color: var(--color-accent-strong);
+}
+
+.check-list,
+.governance-list {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.check-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-sm);
+  align-items: start;
+  color: var(--color-text);
+  line-height: 1.45;
+}
+
+.check-list svg {
+  color: var(--color-pass);
+  margin-top: 0.14rem;
 }
 
 .status-pill,
@@ -462,6 +544,8 @@ p {
   .hero-panel,
   .form-grid,
   .form-grid--wide,
+  .dossier-grid,
+  .review-layout,
   .scenario-form-grid,
   .evidence-strip {
     grid-template-columns: 1fr;
