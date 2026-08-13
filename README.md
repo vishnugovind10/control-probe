@@ -112,10 +112,10 @@ npm run build
 ```
 
 Deploy the web UI from `web/` as a Vite project. The deployed app is not a
-static mock: edit the control spec JSON or fixture JSON, click `Run`, and the
-browser posts those inputs to `web/api/probe.js`. The Vercel serverless API
-validates the submitted payload, evaluates each scenario, and returns JSON
-evidence that the UI renders into pass/fail rows.
+static mock: edit the control form, click `Run`, and the browser posts a spec
+and fixture payload to `web/api/probe.js`. The Vercel serverless API validates
+the submitted payload, evaluates each scenario, and returns JSON evidence that
+the UI renders into pass/fail rows.
 
 Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs/INSTITUTIONAL_READINESS.md), [docs/OPERATIONS.md](docs/OPERATIONS.md), and [docs/CONTROL_MAPPING.md](docs/CONTROL_MAPPING.md).
 

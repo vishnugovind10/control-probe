@@ -37,6 +37,12 @@ type ProbeResponse = {
   scenarios: Scenario[];
 };
 
+type ScenarioInput = {
+  name: string;
+  label: string;
+  shock: number;
+};
+
 const DEFAULT_BASELINE = {
   totalSupply: 10_000_000,
   reserveAssets: 10_600_000,
@@ -59,9 +65,6 @@ const DEFAULT_FIXTURE = {
   reserveAssets: 10_600_000,
 };
 
-const DEFAULT_SPEC_TEXT = JSON.stringify(DEFAULT_SPEC, null, 2);
-const DEFAULT_FIXTURE_TEXT = JSON.stringify(DEFAULT_FIXTURE, null, 2);
-
 function formatMoney(value: number): string {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
@@ -78,8 +81,17 @@ function formatShock(value: number): string {
 
 function App() {
   const [probe, setProbe] = useState<ProbeResponse | null>(null);
-  const [specText, setSpecText] = useState(DEFAULT_SPEC_TEXT);
-  const [fixtureText, setFixtureText] = useState(DEFAULT_FIXTURE_TEXT);
+  const [controlId, setControlId] = useState(DEFAULT_SPEC.controlId);
+  const [controlName, setControlName] = useState(DEFAULT_SPEC.controlName);
+  const [assertion, setAssertion] = useState(DEFAULT_SPEC.assertion);
+  const [totalSupply, setTotalSupply] = useState(DEFAULT_FIXTURE.totalSupply);
+  const [reserveAssets, setReserveAssets] = useState(DEFAULT_FIXTURE.reserveAssets);
+  const [minimumBufferRatio, setMinimumBufferRatio] = useState(
+    DEFAULT_SPEC.minimumBufferRatio,
+  );
+  const [scenarioInputs, setScenarioInputs] = useState<ScenarioInput[]>(
+    DEFAULT_SPEC.scenarios,
+  );
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,9 +127,23 @@ function App() {
     setIsRunning(true);
     setError(null);
     try {
+      const spec = {
+        controlId,
+        controlName,
+        assertion,
+        minimumBufferRatio,
+        scenarios: scenarioInputs,
+      };
+      const fixture = {
+        totalSupply,
+        reserveAssets,
+      };
       const response = await fetch("/api/probe", {
         method: "POST",
-        body: JSON.stringify({ spec: specText, fixture: fixtureText }),
+        body: JSON.stringify({
+          spec: JSON.stringify(spec),
+          fixture: JSON.stringify(fixture),
+        }),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -135,6 +161,18 @@ function App() {
     } finally {
       setIsRunning(false);
     }
+  }
+
+  function updateScenario(
+    index: number,
+    field: keyof ScenarioInput,
+    value: string | number,
+  ) {
+    setScenarioInputs((current) =>
+      current.map((scenario, scenarioIndex) =>
+        scenarioIndex === index ? { ...scenario, [field]: value } : scenario,
+      ),
+    );
   }
 
   return (
@@ -187,31 +225,73 @@ function App() {
               <SlidersHorizontal size={16} aria-hidden="true" />
               Submitted inputs
             </span>
-            <h2>Spec and fixture JSON</h2>
+            <h2>Probe input form</h2>
           </div>
           <p>
-            Edit either body and run the probe again. Invalid JSON or missing
-            numeric fields returns an API validation error.
+            Edit control metadata, observed balances, and stress scenarios. The
+            form submits a spec and fixture payload to the serverless API.
           </p>
         </div>
-        <div className="editor-grid">
-          <label className="json-editor">
-            <span>Control spec</span>
-            <textarea
-              value={specText}
-              spellCheck={false}
-              onChange={(event) => setSpecText(event.target.value)}
+        <form className="probe-form" onSubmit={(event) => event.preventDefault()}>
+          <div className="form-grid form-grid--wide">
+            <TextField
+              label="Control ID"
+              value={controlId}
+              onChange={setControlId}
             />
-          </label>
-          <label className="json-editor">
-            <span>Fixture data</span>
-            <textarea
-              value={fixtureText}
-              spellCheck={false}
-              onChange={(event) => setFixtureText(event.target.value)}
+            <TextField
+              label="Control name"
+              value={controlName}
+              onChange={setControlName}
             />
-          </label>
-        </div>
+            <TextField label="Assertion" value={assertion} onChange={setAssertion} />
+          </div>
+          <div className="form-grid">
+            <NumberField
+              label="Token supply"
+              value={totalSupply}
+              min={0}
+              onChange={setTotalSupply}
+            />
+            <NumberField
+              label="Reserve assets"
+              value={reserveAssets}
+              min={0}
+              onChange={setReserveAssets}
+            />
+            <NumberField
+              label="Minimum buffer ratio"
+              value={minimumBufferRatio}
+              min={0}
+              step={0.01}
+              onChange={setMinimumBufferRatio}
+            />
+          </div>
+          <div className="scenario-form-grid">
+            {scenarioInputs.map((scenario, index) => (
+              <fieldset className="scenario-fieldset" key={index}>
+                <legend>{index === 0 ? "Baseline scenario" : "Stress scenario"}</legend>
+                <TextField
+                  label="Scenario name"
+                  value={scenario.name}
+                  onChange={(value) => updateScenario(index, "name", value)}
+                />
+                <TextField
+                  label="Scenario label"
+                  value={scenario.label}
+                  onChange={(value) => updateScenario(index, "label", value)}
+                />
+                <NumberField
+                  label="Shock"
+                  value={scenario.shock}
+                  min={-1}
+                  step={0.01}
+                  onChange={(value) => updateScenario(index, "shock", value)}
+                />
+              </fieldset>
+            ))}
+          </div>
+        </form>
       </section>
 
       <section className="results-section" aria-label="Probe results">
@@ -258,6 +338,53 @@ function App() {
         />
       </section>
     </main>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="form-field">
+      <span>{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  max,
+  min,
+  onChange,
+  step = 1,
+  value,
+}: {
+  label: string;
+  max?: number;
+  min?: number;
+  onChange: (value: number) => void;
+  step?: number;
+  value: number;
+}) {
+  return (
+    <label className="form-field">
+      <span>{label}</span>
+      <input
+        max={max}
+        min={min}
+        step={step}
+        type="number"
+        value={value}
+        onChange={(event) => onChange(event.target.valueAsNumber)}
+      />
+    </label>
   );
 }
 
