@@ -7,6 +7,7 @@ import {
   FileJson,
   Play,
   ShieldCheck,
+  SlidersHorizontal,
   TriangleAlert,
 } from "lucide-react";
 import "./styles.css";
@@ -42,6 +43,25 @@ const DEFAULT_BASELINE = {
   minimumBufferRatio: 1.05,
 };
 
+const DEFAULT_SPEC = {
+  controlId: "reserve-completeness-web-001",
+  controlName: "Reserve Completeness Under Web Stress",
+  assertion: "reserve_after_shock >= supply * minimum_buffer_ratio",
+  minimumBufferRatio: 1.05,
+  scenarios: [
+    { name: "baseline", label: "Baseline observation", shock: 0 },
+    { name: "minus-30-stress", label: "-30% reserve stress", shock: -0.3 },
+  ],
+};
+
+const DEFAULT_FIXTURE = {
+  totalSupply: 10_000_000,
+  reserveAssets: 10_600_000,
+};
+
+const DEFAULT_SPEC_TEXT = JSON.stringify(DEFAULT_SPEC, null, 2);
+const DEFAULT_FIXTURE_TEXT = JSON.stringify(DEFAULT_FIXTURE, null, 2);
+
 function formatMoney(value: number): string {
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: 0,
@@ -52,8 +72,14 @@ function formatRatio(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
+function formatShock(value: number): string {
+  return `${(value * 100).toFixed(0)}%`;
+}
+
 function App() {
   const [probe, setProbe] = useState<ProbeResponse | null>(null);
+  const [specText, setSpecText] = useState(DEFAULT_SPEC_TEXT);
+  const [fixtureText, setFixtureText] = useState(DEFAULT_FIXTURE_TEXT);
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,13 +116,18 @@ function App() {
     setError(null);
     try {
       const response = await fetch("/api/probe", {
-        headers: { Accept: "application/json" },
+        method: "POST",
+        body: JSON.stringify({ spec: specText, fixture: fixtureText }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
       });
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(`Probe API returned ${response.status}`);
+        throw new Error(data.error || `Probe API returned ${response.status}`);
       }
-      const data = (await response.json()) as ProbeResponse;
-      setProbe(data);
+      setProbe(data as ProbeResponse);
     } catch (caught) {
       const message =
         caught instanceof Error ? caught.message : "Probe API request failed";
@@ -116,8 +147,8 @@ function App() {
           </div>
           <h1 id="page-title">Control evidence that fails where it should.</h1>
           <p>
-            A reserve coverage probe that passes at baseline and exposes the
-            failure under a deterministic -30% stress scenario.
+            Submit a control spec and fixture data to run reserve coverage
+            checks through a Vercel serverless API.
           </p>
         </div>
         <div className="probe-card" aria-label="Reserve control probe">
@@ -146,6 +177,40 @@ function App() {
             {isRunning ? "Running" : "Run"}
           </button>
           {error ? <p className="error-message">API error: {error}</p> : null}
+        </div>
+      </section>
+
+      <section className="input-section" aria-label="Probe inputs">
+        <div className="section-heading">
+          <div>
+            <span className="panel-label">
+              <SlidersHorizontal size={16} aria-hidden="true" />
+              Submitted inputs
+            </span>
+            <h2>Spec and fixture JSON</h2>
+          </div>
+          <p>
+            Edit either body and run the probe again. Invalid JSON or missing
+            numeric fields returns an API validation error.
+          </p>
+        </div>
+        <div className="editor-grid">
+          <label className="json-editor">
+            <span>Control spec</span>
+            <textarea
+              value={specText}
+              spellCheck={false}
+              onChange={(event) => setSpecText(event.target.value)}
+            />
+          </label>
+          <label className="json-editor">
+            <span>Fixture data</span>
+            <textarea
+              value={fixtureText}
+              spellCheck={false}
+              onChange={(event) => setFixtureText(event.target.value)}
+            />
+          </label>
         </div>
       </section>
 
@@ -179,7 +244,7 @@ function App() {
         <EvidenceItem
           icon={<Activity size={18} aria-hidden="true" />}
           label="Assertion"
-          value="reserve_after_shock >= supply * 1.05"
+          value={probe?.assertion ?? DEFAULT_SPEC.assertion}
         />
         <EvidenceItem
           icon={<FileJson size={18} aria-hidden="true" />}
@@ -219,7 +284,7 @@ function ScenarioRow({ scenario }: { scenario: Scenario }) {
       <span role="cell">
         <strong>{scenario.label}</strong>
       </span>
-      <span role="cell">{scenario.shock === 0 ? "0%" : "-30%"}</span>
+      <span role="cell">{formatShock(scenario.shock)}</span>
       <span role="cell">{formatMoney(scenario.reserveAfter)}</span>
       <span role="cell">{formatMoney(scenario.required)}</span>
       <span role="cell">

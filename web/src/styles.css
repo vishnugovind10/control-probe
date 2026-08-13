@@ -44,6 +44,10 @@ button {
   font: inherit;
 }
 
+textarea {
+  font: inherit;
+}
+
 .app-shell {
   width: min(1180px, calc(100% - 2rem));
   margin: 0 auto;
@@ -60,6 +64,7 @@ button {
 
 .hero-copy,
 .probe-card,
+.input-section,
 .results-section,
 .evidence-strip {
   border: 1px solid var(--color-border);
@@ -189,6 +194,50 @@ p {
   font-size: 0.92rem;
 }
 
+.input-section {
+  margin-top: var(--space-xl);
+  padding: var(--space-xl);
+}
+
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: var(--space-md);
+}
+
+.json-editor {
+  display: grid;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.json-editor span {
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.json-editor textarea {
+  width: 100%;
+  min-height: 19rem;
+  resize: vertical;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  font-family:
+    "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.json-editor textarea:focus {
+  border-color: var(--color-accent-strong);
+  outline: 0.18rem solid var(--color-accent);
+}
+
 .status-pill,
 .outcome {
   display: inline-flex;
@@ -301,6 +350,7 @@ p {
 
 @media (max-width: 860px) {
   .hero-panel,
+  .editor-grid,
   .evidence-strip {
     grid-template-columns: 1fr;
   }
