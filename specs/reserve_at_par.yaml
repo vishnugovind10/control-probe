@@ -1,0 +1,50 @@
+version: "0.1"
+control_id: "reserve-completeness-001"
+name: "Reserve Completeness Under Redemption Stress"
+description: >
+  Verifies that total reserve assets cover outstanding token supply
+  at par value under simulated redemption windows.
+metrics:
+  - id: total_supply
+    type: erc20_total_supply
+    address: "{{ TOKEN_ADDRESS }}"
+    decimals: 6
+  - id: reserve_balance
+    type: erc20_balance
+    address: "{{ RESERVE_ADDRESS }}"
+    token: "{{ RESERVE_TOKEN_ADDRESS }}"
+    decimals: 6
+  - id: redemption_window
+    type: parameter
+    value: "{{ REDEMPTION_WINDOW_PCT }}"
+assertions:
+  - id: reserve_covers_supply
+    description: "Reserve balance >= total supply at par"
+    expression: "reserve_balance >= total_supply"
+    severity: critical
+  - id: reserve_covers_stressed_redemption
+    description: "Reserve covers supply after simulated redemption window"
+    expression: "reserve_balance >= total_supply * (1 - redemption_window)"
+    severity: critical
+  - id: reserve_buffer_adequate
+    description: "Reserve buffer >= 5% above minimum required"
+    expression: "(reserve_balance / total_supply) >= 1.05"
+    severity: warning
+stress_scenarios:
+  - name: "baseline"
+    description: "No stress; current state"
+    shocks: {}
+  - name: "10pct_redemption"
+    description: "10% of reserve balance redeemed simultaneously"
+    shocks:
+      reserve_balance: -0.10
+      total_supply: -0.10
+  - name: "20pct_redemption"
+    description: "20% of reserve balance redeemed simultaneously"
+    shocks:
+      reserve_balance: -0.20
+      total_supply: -0.20
+  - name: "oracle_lag"
+    description: "Reserve value marked at 95 cents on the dollar"
+    shocks:
+      reserve_balance: -0.05

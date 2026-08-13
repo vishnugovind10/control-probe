@@ -1,0 +1,7 @@
+{
+  "last_nav_timestamp": 1797226700.0,
+  "current_timestamp": 1797230400.0,
+  "onchain_nav_per_share": 1.0234,
+  "reference_nav_per_share": 1.0241,
+  "staleness_threshold_seconds": 3600.0
+}

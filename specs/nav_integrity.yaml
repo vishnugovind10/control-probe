@@ -1,0 +1,38 @@
+version: "0.1"
+control_id: "nav-integrity-001"
+name: "Tokenized Fund NAV Integrity"
+description: >
+  Verifies NAV freshness and on-chain/off-chain NAV divergence for a
+  tokenized fund.
+metrics:
+  - id: last_nav_timestamp
+    type: fixture
+  - id: current_timestamp
+    type: fixture
+  - id: onchain_nav_per_share
+    type: fixture
+  - id: reference_nav_per_share
+    type: fixture
+  - id: staleness_threshold_seconds
+    type: fixture
+assertions:
+  - id: nav_is_fresh
+    description: "NAV age is within the configured staleness threshold"
+    expression: "current_timestamp - last_nav_timestamp <= staleness_threshold_seconds"
+    severity: critical
+  - id: nav_within_tolerance
+    description: "On-chain NAV is within 0.5% of reference NAV"
+    expression: "onchain_nav_per_share / reference_nav_per_share >= 0.995 and onchain_nav_per_share / reference_nav_per_share <= 1.005"
+    severity: critical
+stress_scenarios:
+  - name: "baseline"
+    description: "Current NAV observation"
+    shocks: {}
+  - name: "oracle_lag_15m"
+    description: "NAV timestamp lags by an additional 15 minutes"
+    shocks:
+      last_nav_timestamp: -0.0000285
+  - name: "oracle_lag_1h"
+    description: "NAV timestamp lags by an additional hour"
+    shocks:
+      last_nav_timestamp: -0.000114

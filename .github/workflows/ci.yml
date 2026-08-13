@@ -1,0 +1,23 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: black --check .
+      - run: mypy control_probe
+      - run: pytest --cov=control_probe --cov-report=term-missing
+      - run: control-probe run --spec specs/reserve_at_par.yaml --adapter fixture --fixture-file tests/fixtures/reserve_pass.json
+      - run: control-probe run --spec specs/nav_integrity.yaml --adapter fixture --fixture-file tests/fixtures/nav_stale.json || true
+      - run: control-probe validate --spec specs/redemption_at_par.yaml

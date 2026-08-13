@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+title: control-probe
+message: "If you use control-probe in research or control assurance work, please cite it."
+type: software
+authors:
+  - name: control-probe contributors
+repository-code: "https://github.com/control-probe/control-probe"
+license: MIT
+version: 0.1.0
+date-released: 2026-08-13

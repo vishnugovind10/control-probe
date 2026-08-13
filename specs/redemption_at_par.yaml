@@ -1,0 +1,40 @@
+version: "0.1"
+control_id: "redemption-at-par-001"
+name: "Redemption Queue Processes At Par"
+description: >
+  Verifies that a redemption queue settles at par and drains within
+  expected block windows under queue-depth stress.
+metrics:
+  - id: queue_depth
+    type: fixture
+  - id: redemption_rate
+    type: fixture
+  - id: par_value
+    type: fixture
+  - id: settlement_value
+    type: fixture
+assertions:
+  - id: settles_at_par
+    description: "Settlement value is at least par"
+    expression: "settlement_value >= par_value"
+    severity: critical
+  - id: drains_within_normal_window
+    description: "Queue drains within 5 blocks under normal conditions"
+    expression: "queue_depth / redemption_rate <= 5"
+    severity: warning
+  - id: drains_within_stress_window
+    description: "Queue drains within 10 blocks under stress"
+    expression: "queue_depth / redemption_rate <= 10"
+    severity: critical
+stress_scenarios:
+  - name: "baseline"
+    description: "Current queue"
+    shocks: {}
+  - name: "2x_queue_depth"
+    description: "Queue depth doubles"
+    shocks:
+      queue_depth: 1.0
+  - name: "5x_queue_depth"
+    description: "Queue depth increases fivefold"
+    shocks:
+      queue_depth: 4.0

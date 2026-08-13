@@ -1,0 +1,6 @@
+{
+  "queue_depth": 500000.0,
+  "redemption_rate": 100000.0,
+  "par_value": 1.0,
+  "settlement_value": 0.998
+}
