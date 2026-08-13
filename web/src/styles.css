@@ -1,18 +1,19 @@
 :root {
-  --color-page: oklch(0.982 0.012 92);
+  --color-page: oklch(0.975 0.008 232);
   --color-surface: oklch(1 0 0);
-  --color-surface-muted: oklch(0.956 0.018 98);
-  --color-text: oklch(0.205 0.026 260);
-  --color-text-muted: oklch(0.44 0.025 260);
-  --color-border: oklch(0.86 0.018 92);
-  --color-accent: oklch(0.53 0.118 184);
-  --color-accent-strong: oklch(0.39 0.104 187);
-  --color-pass: oklch(0.48 0.125 151);
-  --color-pass-surface: oklch(0.94 0.05 151);
-  --color-fail: oklch(0.54 0.18 28);
-  --color-fail-surface: oklch(0.94 0.052 35);
-  --color-idle: oklch(0.49 0.031 260);
-  --color-shadow: oklch(0.22 0.026 260 / 0.12);
+  --color-surface-muted: oklch(0.955 0.01 232);
+  --color-surface-strong: oklch(0.92 0.012 232);
+  --color-text: oklch(0.19 0.03 250);
+  --color-text-muted: oklch(0.44 0.028 250);
+  --color-border: oklch(0.86 0.014 232);
+  --color-accent: oklch(0.49 0.102 190);
+  --color-accent-strong: oklch(0.34 0.086 198);
+  --color-pass: oklch(0.47 0.112 152);
+  --color-pass-surface: oklch(0.94 0.045 152);
+  --color-fail: oklch(0.5 0.155 31);
+  --color-fail-surface: oklch(0.94 0.05 31);
+  --color-idle: oklch(0.48 0.026 250);
+  --color-shadow: oklch(0.2 0.03 250 / 0.1);
   --font-sans:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -24,7 +25,7 @@
   --space-2xl: 3rem;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
-  --shadow-panel: 0 1.5rem 4rem var(--color-shadow);
+  --shadow-panel: 0 1.25rem 3.5rem var(--color-shadow);
 }
 
 * {
@@ -40,26 +41,73 @@ body {
   font-family: var(--font-sans);
 }
 
-button {
-  font: inherit;
-}
-
-input {
+button,
+input,
+select {
   font: inherit;
 }
 
 .app-shell {
-  width: min(1180px, calc(100% - 2rem));
+  width: min(1240px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: var(--space-2xl) 0;
+  padding: var(--space-lg) 0 var(--space-2xl);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  min-height: 4.5rem;
+  margin-bottom: var(--space-lg);
+}
+
+.brand-lockup,
+.topbar-meta,
+.workflow-step,
+.evidence-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.brand-mark,
+.evidence-item__icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-strong);
+  background: var(--color-surface-muted);
+}
+
+.brand-lockup span,
+.topbar-meta span,
+.panel-label,
+.metric span,
+.evidence-item span,
+.form-field span,
+.scenario-fieldset legend {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brand-lockup strong,
+.evidence-item strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 0.98rem;
 }
 
 .hero-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.72fr);
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 0.62fr);
   gap: var(--space-xl);
   align-items: stretch;
-  min-height: 52vh;
 }
 
 .hero-copy,
@@ -77,7 +125,8 @@ input {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(var(--space-xl), 6vw, 5rem);
+  min-height: 29rem;
+  padding: clamp(var(--space-xl), 6vw, 4.75rem);
 }
 
 .eyebrow,
@@ -86,23 +135,20 @@ input {
   gap: var(--space-xs);
   align-items: center;
   color: var(--color-accent-strong);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 h1,
 h2,
+h3,
 p {
   margin-top: 0;
 }
 
 h1 {
-  max-width: 11ch;
+  max-width: 13ch;
   margin-bottom: var(--space-lg);
-  font-size: clamp(3rem, 8vw, 6.75rem);
-  line-height: 0.95;
+  font-size: clamp(3rem, 7vw, 6.25rem);
+  line-height: 0.96;
   letter-spacing: 0;
 }
 
@@ -112,12 +158,35 @@ h2 {
   letter-spacing: 0;
 }
 
+h3 {
+  margin-bottom: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
 p {
-  max-width: 62ch;
+  max-width: 68ch;
   margin-bottom: 0;
   color: var(--color-text-muted);
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-size: 1.04rem;
+  line-height: 1.65;
+}
+
+.workflow-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-xl);
+}
+
+.workflow-step {
+  min-height: 2.5rem;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-strong);
+  background: var(--color-surface-muted);
+  font-weight: 800;
 }
 
 .probe-card {
@@ -128,7 +197,8 @@ p {
 }
 
 .probe-card__header,
-.section-heading {
+.section-heading,
+.scenario-toolbar {
   display: flex;
   gap: var(--space-md);
   align-items: flex-start;
@@ -137,55 +207,73 @@ p {
 
 .metric-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
   margin: var(--space-xl) 0;
 }
 
 .metric {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  min-height: 4rem;
+  display: grid;
+  gap: var(--space-xs);
+  min-height: 4.25rem;
   padding: var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface-muted);
 }
 
-.metric span,
-.evidence-item span {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-}
-
-.metric strong,
-.evidence-item strong {
+.metric strong {
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 1.08rem;
 }
 
-.run-button {
+.run-button,
+.secondary-button,
+.text-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  width: 100%;
-  min-height: 3.25rem;
-  border: 0;
   border-radius: var(--radius-sm);
-  color: var(--color-surface);
-  background: var(--color-accent-strong);
   cursor: pointer;
 }
 
-.run-button:disabled {
-  cursor: wait;
-  opacity: 0.72;
+.run-button {
+  width: 100%;
+  min-height: 3.25rem;
+  border: 0;
+  color: var(--color-surface);
+  background: var(--color-accent-strong);
+}
+
+.run-button:disabled,
+.secondary-button:disabled,
+.text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .run-button:hover {
   background: var(--color-accent);
+}
+
+.secondary-button {
+  min-height: 2.75rem;
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-accent-strong);
+  color: var(--color-accent-strong);
+  background: var(--color-surface);
+  font-weight: 800;
+}
+
+.text-button {
+  width: fit-content;
+  min-height: 2.25rem;
+  padding: 0;
+  border: 0;
+  color: var(--color-text-muted);
+  background: transparent;
+  font-weight: 800;
 }
 
 .error-message {
@@ -194,9 +282,15 @@ p {
   font-size: 0.92rem;
 }
 
-.input-section {
+.input-section,
+.results-section,
+.evidence-strip {
   margin-top: var(--space-xl);
   padding: var(--space-xl);
+}
+
+.section-heading {
+  margin-bottom: var(--space-lg);
 }
 
 .probe-form {
@@ -211,11 +305,11 @@ p {
 }
 
 .form-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .form-grid--wide {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 1.3fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.95fr) minmax(0, 1.35fr);
 }
 
 .scenario-form-grid {
@@ -228,27 +322,30 @@ p {
   min-width: 0;
 }
 
-.form-field span,
-.scenario-fieldset legend {
-  color: var(--color-text-muted);
-  font-size: 0.86rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.form-field input {
+.form-field input,
+.form-field select {
   width: 100%;
   min-height: 3rem;
-  padding: var(--space-md);
+  padding: 0 var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text);
   background: var(--color-surface-muted);
 }
 
-.form-field input:focus {
+.form-field select {
+  appearance: auto;
+}
+
+.form-field input:focus,
+.form-field select:focus {
   border-color: var(--color-accent-strong);
   outline: 0.18rem solid var(--color-accent);
+}
+
+.scenario-toolbar {
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
 }
 
 .scenario-fieldset {
@@ -262,7 +359,8 @@ p {
   background: var(--color-surface-muted);
 }
 
-.scenario-fieldset .form-field input {
+.scenario-fieldset .form-field input,
+.scenario-fieldset .form-field select {
   background: var(--color-surface);
 }
 
@@ -287,7 +385,7 @@ p {
 .status-pill--idle,
 .outcome--idle {
   color: var(--color-idle);
-  background: var(--color-surface-muted);
+  background: var(--color-surface-strong);
 }
 
 .status-pill--pass,
@@ -302,15 +400,6 @@ p {
   background: var(--color-fail-surface);
 }
 
-.results-section {
-  margin-top: var(--space-xl);
-  padding: var(--space-xl);
-}
-
-.section-heading {
-  margin-bottom: var(--space-lg);
-}
-
 .scenario-table {
   display: grid;
   overflow: hidden;
@@ -320,7 +409,7 @@ p {
 
 .scenario-table__row {
   display: grid;
-  grid-template-columns: 1.3fr 0.7fr 1fr 1fr 0.8fr;
+  grid-template-columns: 1.35fr 0.7fr 1fr 1fr 0.8fr;
   gap: var(--space-md);
   align-items: center;
   min-height: 4.5rem;
@@ -337,7 +426,7 @@ p {
   min-height: 3rem;
   color: var(--color-text-muted);
   background: var(--color-surface-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -358,29 +447,18 @@ p {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-md);
-  margin-top: var(--space-xl);
-  padding: var(--space-lg);
 }
 
-.evidence-item {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-sm);
-  align-items: center;
-  min-width: 0;
-}
+@media (max-width: 940px) {
+  .topbar,
+  .topbar-meta,
+  .section-heading,
+  .probe-card__header,
+  .scenario-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-.evidence-item__icon {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: var(--radius-sm);
-  color: var(--color-accent-strong);
-  background: var(--color-surface-muted);
-}
-
-@media (max-width: 860px) {
   .hero-panel,
   .form-grid,
   .form-grid--wide,
@@ -389,8 +467,12 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .hero-panel {
+  .hero-copy {
     min-height: auto;
+  }
+
+  .metric-grid {
+    grid-template-columns: 1fr;
   }
 
   .scenario-table__row,
@@ -400,10 +482,5 @@ p {
 
   .scenario-table__row--head {
     display: none;
-  }
-
-  .section-heading,
-  .probe-card__header {
-    flex-direction: column;
   }
 }

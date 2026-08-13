@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("Run shows baseline pass and -30% stress failure", async ({ page }) => {
+test("Run submits institutional form with multiple dropdown scenarios", async ({
+  page,
+}) => {
   let apiCalled = false;
   let submittedBody: { spec: string; fixture: string } | null = null;
   await page.route("**/api/probe", async (route) => {
@@ -20,21 +22,30 @@ test("Run shows baseline pass and -30% stress failure", async ({ page }) => {
         assertion: "reserve_after_shock >= supply * minimum_buffer_ratio",
         scenarios: [
           {
-            name: "mild",
-            label: "Mild drawdown",
-            shock: -0.05,
-            reserveAfter: 114,
+            name: "baseline",
+            label: "Baseline observation",
+            shock: 0,
+            reserveAfter: 120,
             required: 110,
-            ratio: 1.14,
+            ratio: 1.2,
             status: "pass",
           },
           {
-            name: "severe",
-            label: "Severe drawdown",
+            name: "liquidity-stress",
+            label: "Liquidity stress",
             shock: -0.2,
             reserveAfter: 96,
             required: 110,
             ratio: 0.96,
+            status: "fail",
+          },
+          {
+            name: "operational-freeze",
+            label: "Operational freeze",
+            shock: -0.45,
+            reserveAfter: 66,
+            required: 110,
+            ratio: 0.66,
             status: "fail",
           },
         ],
@@ -44,29 +55,32 @@ test("Run shows baseline pass and -30% stress failure", async ({ page }) => {
 
   await page.goto("/");
 
+  await expect(page.getByText("Reserve assurance workspace")).toBeVisible();
+  await page.getByLabel("Scenario pack").selectOption("incident-response");
   await page.getByLabel("Control ID").fill("custom-control-test");
   await page.getByLabel("Control name").fill("Custom Reserve Probe");
   await page.getByLabel("Token supply").fill("100");
   await page.getByLabel("Reserve assets").fill("120");
   await page.getByLabel("Minimum buffer ratio").fill("1.1");
-  await page.getByLabel("Scenario name").nth(0).fill("mild");
-  await page.getByLabel("Scenario label").nth(0).fill("Mild drawdown");
-  await page.getByLabel("Shock").nth(0).fill("-0.05");
-  await page.getByLabel("Scenario name").nth(1).fill("severe");
-  await page.getByLabel("Scenario label").nth(1).fill("Severe drawdown");
-  await page.getByLabel("Shock").nth(1).fill("-0.2");
+  await page.getByLabel("Preset").nth(1).selectOption("liquidity-stress");
+  await page.getByRole("button", { name: "Add scenario" }).click();
+  await page.getByLabel("Preset").last().selectOption("operational-freeze");
 
-  await expect(page.getByText("Pending")).toHaveCount(2);
-  await page.getByRole("button", { name: "Run" }).click();
+  await expect(page.getByText("5 submitted scenarios")).toBeVisible();
+  await page.getByRole("button", { name: "Run probe" }).click();
 
   await expect.poll(() => apiCalled).toBe(true);
-  expect(JSON.parse(submittedBody?.spec ?? "{}").controlId).toBe(
-    "custom-control-test",
-  );
-  expect(JSON.parse(submittedBody?.fixture ?? "{}").reserveAssets).toBe(120);
-  await expect(page.getByRole("cell", { name: "Mild drawdown" })).toBeVisible();
-  await expect(page.getByRole("cell", { name: "Severe drawdown" })).toBeVisible();
+  const submittedSpec = JSON.parse(submittedBody?.spec ?? "{}");
+  const submittedFixture = JSON.parse(submittedBody?.fixture ?? "{}");
+  expect(submittedSpec.controlId).toBe("custom-control-test");
+  expect(submittedSpec.scenarios).toHaveLength(5);
+  expect(submittedSpec.scenarios[1].name).toBe("liquidity-stress");
+  expect(submittedSpec.scenarios[4].name).toContain("operational-freeze");
+  expect(submittedFixture.reserveAssets).toBe(120);
+  await expect(page.getByRole("cell", { name: "Baseline observation" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Liquidity stress" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Operational freeze" })).toBeVisible();
   await expect(page.locator(".scenario-table__row--pass")).toContainText("PASS");
-  await expect(page.locator(".scenario-table__row--fail")).toContainText("FAIL");
+  await expect(page.locator(".scenario-table__row--fail")).toHaveCount(2);
   await expect(page.getByText("API result custom-control-test")).toBeVisible();
 });

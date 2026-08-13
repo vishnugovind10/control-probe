@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
   ArrowRight,
+  Building2,
   CheckCircle2,
+  ClipboardCheck,
+  Database,
   FileJson,
+  Layers3,
   Play,
   ShieldCheck,
   SlidersHorizontal,
@@ -43,6 +47,19 @@ type ScenarioInput = {
   shock: number;
 };
 
+type ScenarioPreset = ScenarioInput & {
+  description: string;
+};
+
+type ScenarioPack = {
+  id: string;
+  label: string;
+  controlName: string;
+  reserveAssets: number;
+  minimumBufferRatio: number;
+  scenarios: ScenarioInput[];
+};
+
 const DEFAULT_BASELINE = {
   totalSupply: 10_000_000,
   reserveAssets: 10_600_000,
@@ -54,16 +71,88 @@ const DEFAULT_SPEC = {
   controlName: "Reserve Completeness Under Web Stress",
   assertion: "reserve_after_shock >= supply * minimum_buffer_ratio",
   minimumBufferRatio: 1.05,
-  scenarios: [
-    { name: "baseline", label: "Baseline observation", shock: 0 },
-    { name: "minus-30-stress", label: "-30% reserve stress", shock: -0.3 },
-  ],
 };
 
-const DEFAULT_FIXTURE = {
-  totalSupply: 10_000_000,
-  reserveAssets: 10_600_000,
-};
+const SCENARIO_PRESETS: ScenarioPreset[] = [
+  {
+    name: "baseline",
+    label: "Baseline observation",
+    shock: 0,
+    description: "No reserve movement",
+  },
+  {
+    name: "minor-drawdown",
+    label: "Minor reserve drawdown",
+    shock: -0.05,
+    description: "Five percent reserve decline",
+  },
+  {
+    name: "rate-shock",
+    label: "Rate shock reserve loss",
+    shock: -0.12,
+    description: "Yield and liquidation pressure",
+  },
+  {
+    name: "liquidity-stress",
+    label: "Liquidity stress",
+    shock: -0.2,
+    description: "Large redemption pressure",
+  },
+  {
+    name: "severe-market-stress",
+    label: "Severe market stress",
+    shock: -0.3,
+    description: "Thirty percent reserve decline",
+  },
+  {
+    name: "operational-freeze",
+    label: "Operational freeze",
+    shock: -0.45,
+    description: "Unavailable reserves after incident",
+  },
+];
+
+const SCENARIO_PACKS: ScenarioPack[] = [
+  {
+    id: "committee-review",
+    label: "Risk committee review",
+    controlName: "Reserve Completeness Under Web Stress",
+    reserveAssets: 10_600_000,
+    minimumBufferRatio: 1.05,
+    scenarios: [
+      SCENARIO_PRESETS[0],
+      SCENARIO_PRESETS[1],
+      SCENARIO_PRESETS[3],
+      SCENARIO_PRESETS[4],
+    ],
+  },
+  {
+    id: "treasury-daily",
+    label: "Treasury daily monitor",
+    controlName: "Daily Reserve Coverage Monitor",
+    reserveAssets: 11_400_000,
+    minimumBufferRatio: 1.02,
+    scenarios: [
+      SCENARIO_PRESETS[0],
+      SCENARIO_PRESETS[1],
+      SCENARIO_PRESETS[2],
+      SCENARIO_PRESETS[3],
+    ],
+  },
+  {
+    id: "incident-response",
+    label: "Incident response drill",
+    controlName: "Reserve Availability Incident Probe",
+    reserveAssets: 10_250_000,
+    minimumBufferRatio: 1.05,
+    scenarios: [
+      SCENARIO_PRESETS[0],
+      SCENARIO_PRESETS[2],
+      SCENARIO_PRESETS[4],
+      SCENARIO_PRESETS[5],
+    ],
+  },
+];
 
 function formatMoney(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -79,49 +168,64 @@ function formatShock(value: number): string {
   return `${(value * 100).toFixed(0)}%`;
 }
 
+function formatGeneratedAt(value: string | null): string {
+  if (!value) {
+    return "Not executed";
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 function App() {
   const [probe, setProbe] = useState<ProbeResponse | null>(null);
+  const [scenarioPackId, setScenarioPackId] = useState(SCENARIO_PACKS[0].id);
   const [controlId, setControlId] = useState(DEFAULT_SPEC.controlId);
   const [controlName, setControlName] = useState(DEFAULT_SPEC.controlName);
   const [assertion, setAssertion] = useState(DEFAULT_SPEC.assertion);
-  const [totalSupply, setTotalSupply] = useState(DEFAULT_FIXTURE.totalSupply);
-  const [reserveAssets, setReserveAssets] = useState(DEFAULT_FIXTURE.reserveAssets);
+  const [totalSupply, setTotalSupply] = useState(DEFAULT_BASELINE.totalSupply);
+  const [reserveAssets, setReserveAssets] = useState(DEFAULT_BASELINE.reserveAssets);
   const [minimumBufferRatio, setMinimumBufferRatio] = useState(
-    DEFAULT_SPEC.minimumBufferRatio,
+    DEFAULT_BASELINE.minimumBufferRatio,
   );
   const [scenarioInputs, setScenarioInputs] = useState<ScenarioInput[]>(
-    DEFAULT_SPEC.scenarios,
+    SCENARIO_PACKS[0].scenarios,
   );
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const baseline = probe?.baseline ?? DEFAULT_BASELINE;
-  const scenarios: Scenario[] =
-    probe?.scenarios ??
-    [
-      {
-        name: "baseline",
-        label: "Baseline observation",
-        shock: 0,
-        reserveAfter: DEFAULT_BASELINE.reserveAssets,
-        required:
-          DEFAULT_BASELINE.totalSupply * DEFAULT_BASELINE.minimumBufferRatio,
-        ratio: DEFAULT_BASELINE.reserveAssets / DEFAULT_BASELINE.totalSupply,
-        status: "idle",
-      },
-      {
-        name: "minus-30-stress",
-        label: "-30% reserve stress",
-        shock: -0.3,
-        reserveAfter: DEFAULT_BASELINE.reserveAssets * 0.7,
-        required:
-          DEFAULT_BASELINE.totalSupply * DEFAULT_BASELINE.minimumBufferRatio,
-        ratio: (DEFAULT_BASELINE.reserveAssets * 0.7) / DEFAULT_BASELINE.totalSupply,
-        status: "idle",
-      },
-    ];
+  const baseline = probe?.baseline ?? {
+    totalSupply,
+    reserveAssets,
+    minimumBufferRatio,
+  };
+  const scenarios: Scenario[] = useMemo(
+    () =>
+      probe?.scenarios ??
+      scenarioInputs.map((scenario) => {
+        const reserveAfter = reserveAssets * (1 + scenario.shock);
+        const required = totalSupply * minimumBufferRatio;
+        return {
+          ...scenario,
+          reserveAfter,
+          required,
+          ratio: reserveAfter / totalSupply,
+          status: "idle",
+        };
+      }),
+    [minimumBufferRatio, probe?.scenarios, reserveAssets, scenarioInputs, totalSupply],
+  );
 
-  const failedScenario = scenarios.find((scenario) => scenario.status === "fail");
+  const failedScenarioCount = scenarios.filter(
+    (scenario) => scenario.status === "fail",
+  ).length;
+  const passedScenarioCount = scenarios.filter(
+    (scenario) => scenario.status === "pass",
+  ).length;
+  const portfolioStatus: ScenarioStatus =
+    probe && failedScenarioCount > 0 ? "fail" : probe ? "pass" : "idle";
+  const coverageDelta = baseline.reserveAssets - baseline.totalSupply;
 
   async function runProbe() {
     setIsRunning(true);
@@ -163,6 +267,20 @@ function App() {
     }
   }
 
+  function applyScenarioPack(packId: string) {
+    const pack = SCENARIO_PACKS.find((option) => option.id === packId);
+    if (!pack) {
+      return;
+    }
+    setScenarioPackId(pack.id);
+    setControlName(pack.controlName);
+    setReserveAssets(pack.reserveAssets);
+    setMinimumBufferRatio(pack.minimumBufferRatio);
+    setScenarioInputs(pack.scenarios);
+    setProbe(null);
+    setError(null);
+  }
+
   function updateScenario(
     index: number,
     field: keyof ScenarioInput,
@@ -173,33 +291,98 @@ function App() {
         scenarioIndex === index ? { ...scenario, [field]: value } : scenario,
       ),
     );
+    setProbe(null);
+  }
+
+  function applyScenarioPreset(index: number, presetName: string) {
+    const preset = SCENARIO_PRESETS.find((option) => option.name === presetName);
+    if (!preset) {
+      return;
+    }
+    setScenarioInputs((current) =>
+      current.map((scenario, scenarioIndex) =>
+        scenarioIndex === index
+          ? { name: preset.name, label: preset.label, shock: preset.shock }
+          : scenario,
+      ),
+    );
+    setProbe(null);
+  }
+
+  function addScenario() {
+    const nextPreset = SCENARIO_PRESETS[Math.min(scenarioInputs.length, 5)];
+    setScenarioInputs((current) => [
+      ...current,
+      {
+        name: `${nextPreset.name}-${current.length + 1}`,
+        label: nextPreset.label,
+        shock: nextPreset.shock,
+      },
+    ]);
+    setProbe(null);
+  }
+
+  function removeScenario(index: number) {
+    setScenarioInputs((current) =>
+      current.length > 1
+        ? current.filter((_, scenarioIndex) => scenarioIndex !== index)
+        : current,
+    );
+    setProbe(null);
+  }
+
+  function updateControlField(update: () => void) {
+    update();
+    setProbe(null);
   }
 
   return (
     <main className="app-shell">
+      <header className="topbar" aria-label="Product header">
+        <div className="brand-lockup">
+          <div className="brand-mark">
+            <ShieldCheck size={18} aria-hidden="true" />
+          </div>
+          <div>
+            <span>control-probe</span>
+            <strong>Institutional Control Evidence</strong>
+          </div>
+        </div>
+        <div className="topbar-meta">
+          <span>Serverless execution</span>
+          <StatusPill status={portfolioStatus} />
+        </div>
+      </header>
+
       <section className="hero-panel" aria-labelledby="page-title">
         <div className="hero-copy">
           <div className="eyebrow">
-            <ShieldCheck size={16} aria-hidden="true" />
-            control-probe web
+            <Building2 size={16} aria-hidden="true" />
+            Reserve assurance workspace
           </div>
-          <h1 id="page-title">Control evidence that fails where it should.</h1>
+          <h1 id="page-title">Run control probes with decision-grade evidence.</h1>
           <p>
-            Submit a control spec and fixture data to run reserve coverage
-            checks through a Vercel serverless API.
+            Configure reserve inputs, select a scenario pack, and submit multiple
+            stress cases to a Vercel serverless probe API.
           </p>
+          <div className="workflow-strip" aria-label="Control workflow">
+            <WorkflowStep icon={<Database size={16} />} label="Fixture" />
+            <WorkflowStep icon={<Layers3 size={16} />} label="Scenarios" />
+            <WorkflowStep icon={<ClipboardCheck size={16} />} label="Evidence" />
+          </div>
         </div>
-        <div className="probe-card" aria-label="Reserve control probe">
+        <aside className="probe-card" aria-label="Reserve control probe">
           <div className="probe-card__header">
             <div>
-              <span className="panel-label">Reserve completeness</span>
-              <h2>Coverage under stress</h2>
+              <span className="panel-label">Control summary</span>
+              <h2>{controlName}</h2>
             </div>
-            <StatusPill status={probe ? (failedScenario ? "fail" : "pass") : "idle"} />
+            <StatusPill status={portfolioStatus} />
           </div>
           <div className="metric-grid">
             <Metric label="Token supply" value={formatMoney(baseline.totalSupply)} />
             <Metric label="Reserve assets" value={formatMoney(baseline.reserveAssets)} />
+            <Metric label="Coverage surplus" value={formatMoney(coverageDelta)} />
             <Metric
               label="Required buffer"
               value={formatRatio(baseline.minimumBufferRatio)}
@@ -212,10 +395,10 @@ function App() {
             onClick={runProbe}
           >
             <Play size={18} aria-hidden="true" />
-            {isRunning ? "Running" : "Run"}
+            {isRunning ? "Running probe" : "Run probe"}
           </button>
           {error ? <p className="error-message">API error: {error}</p> : null}
-        </div>
+        </aside>
       </section>
 
       <section className="input-section" aria-label="Probe inputs">
@@ -223,54 +406,87 @@ function App() {
           <div>
             <span className="panel-label">
               <SlidersHorizontal size={16} aria-hidden="true" />
-              Submitted inputs
+              Probe configuration
             </span>
-            <h2>Probe input form</h2>
+            <h2>Inputs, controls, and scenario pack</h2>
           </div>
           <p>
-            Edit control metadata, observed balances, and stress scenarios. The
-            form submits a spec and fixture payload to the serverless API.
+            Use the dropdown presets for common institutional reviews, then
+            refine individual stress cases before execution.
           </p>
         </div>
         <form className="probe-form" onSubmit={(event) => event.preventDefault()}>
           <div className="form-grid form-grid--wide">
+            <SelectField
+              label="Scenario pack"
+              value={scenarioPackId}
+              onChange={applyScenarioPack}
+              options={SCENARIO_PACKS.map((pack) => ({
+                label: pack.label,
+                value: pack.id,
+              }))}
+            />
             <TextField
               label="Control ID"
               value={controlId}
-              onChange={setControlId}
+              onChange={(value) => updateControlField(() => setControlId(value))}
             />
             <TextField
               label="Control name"
               value={controlName}
-              onChange={setControlName}
+              onChange={(value) => updateControlField(() => setControlName(value))}
             />
-            <TextField label="Assertion" value={assertion} onChange={setAssertion} />
           </div>
-          <div className="form-grid">
+          <div className="form-grid form-grid--wide">
+            <TextField
+              label="Assertion"
+              value={assertion}
+              onChange={(value) => updateControlField(() => setAssertion(value))}
+            />
             <NumberField
               label="Token supply"
               value={totalSupply}
               min={0}
-              onChange={setTotalSupply}
+              onChange={(value) => updateControlField(() => setTotalSupply(value))}
             />
             <NumberField
               label="Reserve assets"
               value={reserveAssets}
               min={0}
-              onChange={setReserveAssets}
+              onChange={(value) => updateControlField(() => setReserveAssets(value))}
             />
             <NumberField
               label="Minimum buffer ratio"
               value={minimumBufferRatio}
               min={0}
               step={0.01}
-              onChange={setMinimumBufferRatio}
+              onChange={(value) =>
+                updateControlField(() => setMinimumBufferRatio(value))
+              }
             />
+          </div>
+          <div className="scenario-toolbar">
+            <div>
+              <span className="panel-label">Scenario matrix</span>
+              <h3>{scenarioInputs.length} submitted scenarios</h3>
+            </div>
+            <button className="secondary-button" type="button" onClick={addScenario}>
+              Add scenario
+            </button>
           </div>
           <div className="scenario-form-grid">
             {scenarioInputs.map((scenario, index) => (
-              <fieldset className="scenario-fieldset" key={index}>
-                <legend>{index === 0 ? "Baseline scenario" : "Stress scenario"}</legend>
+              <fieldset className="scenario-fieldset" key={`${scenario.name}-${index}`}>
+                <legend>Scenario {index + 1}</legend>
+                <SelectField
+                  label="Preset"
+                  value={scenario.name}
+                  onChange={(value) => applyScenarioPreset(index, value)}
+                  options={SCENARIO_PRESETS.map((preset) => ({
+                    label: preset.label,
+                    value: preset.name,
+                  }))}
+                />
                 <TextField
                   label="Scenario name"
                   value={scenario.name}
@@ -288,6 +504,14 @@ function App() {
                   step={0.01}
                   onChange={(value) => updateScenario(index, "shock", value)}
                 />
+                <button
+                  className="text-button"
+                  disabled={scenarioInputs.length === 1}
+                  type="button"
+                  onClick={() => removeScenario(index)}
+                >
+                  Remove
+                </button>
               </fieldset>
             ))}
           </div>
@@ -298,11 +522,11 @@ function App() {
         <div className="section-heading">
           <div>
             <span className="panel-label">Execution trace</span>
-            <h2>Same control, two conditions</h2>
+            <h2>Scenario outcomes</h2>
           </div>
           <p>
-            The baseline row proves current coverage. The stress row shows
-            where reserve coverage breaks.
+            Results are produced from the submitted spec and fixture payload,
+            with each scenario evaluated independently.
           </p>
         </div>
 
@@ -314,8 +538,8 @@ function App() {
             <span role="columnheader">Required</span>
             <span role="columnheader">Status</span>
           </div>
-          {scenarios.map((scenario) => (
-            <ScenarioRow key={scenario.name} scenario={scenario} />
+          {scenarios.map((scenario, index) => (
+            <ScenarioRow key={`${scenario.name}-${index}`} scenario={scenario} />
           ))}
         </div>
       </section>
@@ -323,21 +547,30 @@ function App() {
       <section className="evidence-strip" aria-label="Evidence summary">
         <EvidenceItem
           icon={<Activity size={18} aria-hidden="true" />}
-          label="Assertion"
-          value={probe?.assertion ?? DEFAULT_SPEC.assertion}
+          label="Run state"
+          value={`${passedScenarioCount} pass / ${failedScenarioCount} fail`}
         />
         <EvidenceItem
           icon={<FileJson size={18} aria-hidden="true" />}
           label="Output"
-          value={probe ? `API result ${probe.controlId}` : "Serverless API result"}
+          value={probe ? `API result ${probe.controlId}` : "Awaiting execution"}
         />
         <EvidenceItem
           icon={<ArrowRight size={18} aria-hidden="true" />}
-          label="Signal"
-          value="Critical stress failure is visible without narration"
+          label="Generated"
+          value={formatGeneratedAt(probe?.generatedAt ?? null)}
         />
       </section>
     </main>
+  );
+}
+
+function WorkflowStep({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="workflow-step">
+      {icon}
+      <span>{label}</span>
+    </div>
   );
 }
 
@@ -381,9 +614,34 @@ function NumberField({
         min={min}
         step={step}
         type="number"
-        value={value}
+        value={Number.isNaN(value) ? "" : value}
         onChange={(event) => onChange(event.target.valueAsNumber)}
       />
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  onChange,
+  options,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  options: Array<{ label: string; value: string }>;
+  value: string;
+}) {
+  return (
+    <label className="form-field">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)}>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }
