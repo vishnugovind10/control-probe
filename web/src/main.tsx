@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -23,22 +23,24 @@ type Scenario = {
   status: ScenarioStatus;
 };
 
-const BASELINE_SUPPLY = 10_000_000;
-const BASELINE_RESERVE = 10_600_000;
-const MINIMUM_BUFFER_RATIO = 1.05;
-
-function evaluateScenario(shock: number): Omit<Scenario, "name" | "label"> {
-  const reserveAfter = BASELINE_RESERVE * (1 + shock);
-  const required = BASELINE_SUPPLY * MINIMUM_BUFFER_RATIO;
-  const ratio = reserveAfter / BASELINE_SUPPLY;
-  return {
-    shock,
-    reserveAfter,
-    required,
-    ratio,
-    status: reserveAfter >= required ? "pass" : "fail",
+type ProbeResponse = {
+  controlId: string;
+  controlName: string;
+  generatedAt: string;
+  baseline: {
+    totalSupply: number;
+    reserveAssets: number;
+    minimumBufferRatio: number;
   };
-}
+  assertion: string;
+  scenarios: Scenario[];
+};
+
+const DEFAULT_BASELINE = {
+  totalSupply: 10_000_000,
+  reserveAssets: 10_600_000,
+  minimumBufferRatio: 1.05,
+};
 
 function formatMoney(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -51,28 +53,58 @@ function formatRatio(value: number): string {
 }
 
 function App() {
-  const [hasRun, setHasRun] = useState(false);
+  const [probe, setProbe] = useState<ProbeResponse | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const scenarios: Scenario[] = useMemo(() => {
-    const baseline = evaluateScenario(0);
-    const stressed = evaluateScenario(-0.3);
-    return [
+  const baseline = probe?.baseline ?? DEFAULT_BASELINE;
+  const scenarios: Scenario[] =
+    probe?.scenarios ??
+    [
       {
         name: "baseline",
         label: "Baseline observation",
-        ...baseline,
-        status: hasRun ? baseline.status : "idle",
+        shock: 0,
+        reserveAfter: DEFAULT_BASELINE.reserveAssets,
+        required:
+          DEFAULT_BASELINE.totalSupply * DEFAULT_BASELINE.minimumBufferRatio,
+        ratio: DEFAULT_BASELINE.reserveAssets / DEFAULT_BASELINE.totalSupply,
+        status: "idle",
       },
       {
         name: "minus-30-stress",
         label: "-30% reserve stress",
-        ...stressed,
-        status: hasRun ? stressed.status : "idle",
+        shock: -0.3,
+        reserveAfter: DEFAULT_BASELINE.reserveAssets * 0.7,
+        required:
+          DEFAULT_BASELINE.totalSupply * DEFAULT_BASELINE.minimumBufferRatio,
+        ratio: (DEFAULT_BASELINE.reserveAssets * 0.7) / DEFAULT_BASELINE.totalSupply,
+        status: "idle",
       },
     ];
-  }, [hasRun]);
 
   const failedScenario = scenarios.find((scenario) => scenario.status === "fail");
+
+  async function runProbe() {
+    setIsRunning(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/probe", {
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error(`Probe API returned ${response.status}`);
+      }
+      const data = (await response.json()) as ProbeResponse;
+      setProbe(data);
+    } catch (caught) {
+      const message =
+        caught instanceof Error ? caught.message : "Probe API request failed";
+      setError(message);
+    } finally {
+      setIsRunning(false);
+    }
+  }
 
   return (
     <main className="app-shell">
@@ -94,17 +126,26 @@ function App() {
               <span className="panel-label">Reserve completeness</span>
               <h2>Coverage under stress</h2>
             </div>
-            <StatusPill status={hasRun ? (failedScenario ? "fail" : "pass") : "idle"} />
+            <StatusPill status={probe ? (failedScenario ? "fail" : "pass") : "idle"} />
           </div>
           <div className="metric-grid">
-            <Metric label="Token supply" value={formatMoney(BASELINE_SUPPLY)} />
-            <Metric label="Reserve assets" value={formatMoney(BASELINE_RESERVE)} />
-            <Metric label="Required buffer" value={formatRatio(MINIMUM_BUFFER_RATIO)} />
+            <Metric label="Token supply" value={formatMoney(baseline.totalSupply)} />
+            <Metric label="Reserve assets" value={formatMoney(baseline.reserveAssets)} />
+            <Metric
+              label="Required buffer"
+              value={formatRatio(baseline.minimumBufferRatio)}
+            />
           </div>
-          <button className="run-button" type="button" onClick={() => setHasRun(true)}>
+          <button
+            className="run-button"
+            type="button"
+            disabled={isRunning}
+            onClick={runProbe}
+          >
             <Play size={18} aria-hidden="true" />
-            Run
+            {isRunning ? "Running" : "Run"}
           </button>
+          {error ? <p className="error-message">API error: {error}</p> : null}
         </div>
       </section>
 
@@ -143,7 +184,7 @@ function App() {
         <EvidenceItem
           icon={<FileJson size={18} aria-hidden="true" />}
           label="Output"
-          value="JSON-ready scenario evidence"
+          value={probe ? `API result ${probe.controlId}` : "Serverless API result"}
         />
         <EvidenceItem
           icon={<ArrowRight size={18} aria-hidden="true" />}

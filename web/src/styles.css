@@ -174,8 +174,19 @@ p {
   cursor: pointer;
 }
 
+.run-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .run-button:hover {
   background: var(--color-accent);
+}
+
+.error-message {
+  margin-top: var(--space-md);
+  color: var(--color-fail);
+  font-size: 0.92rem;
 }
 
 .status-pill,

@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "smoke": "playwright test"
+    "test:api": "node tests/probe-api.test.mjs",
+    "smoke": "npm run test:api && playwright test"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.2",

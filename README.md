@@ -103,7 +103,7 @@ docker build -t control-probe:local .
 docker run --rm control-probe:local validate --spec specs/reserve_at_par.yaml
 ```
 
-Web UI:
+Web UI with serverless probe API:
 
 ```bash
 cd web
@@ -113,7 +113,8 @@ npm run build
 
 Deploy the web UI from `web/` as a Vite project. The demonstration flow is:
 open the deployed URL, click `Run`, and confirm the baseline row passes while
-the `-30% reserve stress` row fails.
+the `-30% reserve stress` row fails. The Run button calls `web/api/probe.js`
+on Vercel and renders the returned JSON evidence.
 
 Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs/INSTITUTIONAL_READINESS.md), [docs/OPERATIONS.md](docs/OPERATIONS.md), and [docs/CONTROL_MAPPING.md](docs/CONTROL_MAPPING.md).
 
