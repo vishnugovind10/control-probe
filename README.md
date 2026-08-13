@@ -2,7 +2,7 @@
 
 Verify that digital asset control specifications hold under stress, not just under normal conditions.
 
-[![CI](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml)
+[![CI](https://github.com/control-probe/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/control-probe/control-probe/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## The problem
@@ -14,7 +14,7 @@ Regulated financial institutions deploying tokenized funds, stablecoins, and set
 ## Quick start
 
 ```bash
-pip install git+https://github.com/vishnugovind10/control-probe.git
+pip install git+https://github.com/control-probe/control-probe.git
 control-probe run --spec specs/reserve_at_par.yaml --adapter fixture --fixture-file tests/fixtures/reserve_pass.json
 ```
 

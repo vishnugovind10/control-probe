@@ -33,8 +33,8 @@ control-probe = "control_probe.cli:app"
 control-probe-quality-gate = "control_probe.quality_gate:main"
 
 [project.urls]
-Repository = "https://github.com/vishnugovind10/control-probe"
-Issues = "https://github.com/vishnugovind10/control-probe/issues"
+Repository = "https://github.com/control-probe/control-probe"
+Issues = "https://github.com/control-probe/control-probe/issues"
 
 [tool.black]
 line-length = 88
