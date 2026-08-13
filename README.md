@@ -103,6 +103,18 @@ docker build -t control-probe:local .
 docker run --rm control-probe:local validate --spec specs/reserve_at_par.yaml
 ```
 
+Web UI:
+
+```bash
+cd web
+npm install
+npm run build
+```
+
+Deploy the web UI from `web/` as a Vite project. The demonstration flow is:
+open the deployed URL, click `Run`, and confirm the baseline row passes while
+the `-30% reserve stress` row fails.
+
 Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs/INSTITUTIONAL_READINESS.md), [docs/OPERATIONS.md](docs/OPERATIONS.md), and [docs/CONTROL_MAPPING.md](docs/CONTROL_MAPPING.md).
 
 ## Limitations

@@ -10,3 +10,5 @@ build/
 *.egg-info/
 .venv/
 *.pyc
+web/node_modules/
+web/dist/
