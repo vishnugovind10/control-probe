@@ -5,6 +5,24 @@ type: software
 authors:
   - name: control-probe contributors
 repository-code: "https://github.com/control-probe/control-probe"
+url: "https://github.com/control-probe/control-probe"
 license: MIT
 version: 0.1.0
 date-released: 2026-08-13
+abstract: >-
+  control-probe is a public template for turning digital asset control
+  requirements into executable evidence. It evaluates structured control
+  specifications against deterministic fixtures or read-only EVM state,
+  applies stress scenarios, and emits JSON plus Markdown evidence suitable
+  for engineering review, CI policy gates, and institutional control testing.
+keywords:
+  - control testing
+  - compliance automation
+  - digital assets
+  - evidence generation
+  - institutional infrastructure
+  - reserve assurance
+  - risk controls
+  - stablecoins
+  - tokenization
+  - web3 infrastructure

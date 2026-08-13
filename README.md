@@ -4,12 +4,26 @@ Verify that digital asset control specifications hold under stress, not just und
 
 [![CI](https://github.com/control-probe/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/control-probe/control-probe/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Python](https://img.shields.io/badge/python-3.11%2B-informational)
+![Control Testing](https://img.shields.io/badge/domain-control%20testing-informational)
+![Digital Assets](https://img.shields.io/badge/domain-digital%20assets-informational)
+![Evidence](https://img.shields.io/badge/output-evidence%20reports-informational)
 
 ## The problem
 
 Regulated financial institutions deploying tokenized funds, stablecoins, and settlement systems often maintain controls in policy documents while the actual enforcement lives in contracts, custody systems, ledger logic, or operational runbooks. That creates a verification gap: the written control and the implemented state can drift.
 
 `control-probe` closes that gap for technical controls. It reads a structured YAML control specification, resolves implementation data from a fixture or EVM source, applies stress scenarios, evaluates assertions, and emits JSON plus Markdown evidence reports that can be used in engineering review, control testing, and CI.
+
+## Institutional Positioning
+
+This repository is a public template for engineering teams that need control evidence to be:
+
+- **Executable**: controls are encoded as versioned YAML specifications and evaluated by a repeatable engine.
+- **Reviewable**: every run emits structured JSON and Markdown evidence with resolved metric values.
+- **CI-compatible**: critical control failures return non-zero exit codes for policy gates.
+- **Source-aware**: deterministic fixtures, read-only public-chain data, and custom adapters are explicit boundaries.
+- **Disclosure-safe**: examples use synthetic or placeholder values and do not require private keys, passwords, or production fixtures.
 
 ## Quick start
 
@@ -120,6 +134,10 @@ returns JSON evidence that the UI renders into pass/fail rows.
 
 Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs/INSTITUTIONAL_READINESS.md), [docs/OPERATIONS.md](docs/OPERATIONS.md), and [docs/CONTROL_MAPPING.md](docs/CONTROL_MAPPING.md).
 
+## Project Tags
+
+`control-testing` `compliance-automation` `digital-assets` `evidence-generation` `evm` `institutional-infrastructure` `reserve-assurance` `risk-controls` `stablecoins` `tokenization` `web3`
+
 ## Limitations
 
 See [LIMITATIONS.md](LIMITATIONS.md).
@@ -130,4 +148,8 @@ See [ROADMAP.md](ROADMAP.md).
 
 ## Citation
 
-See [CITATION.cff](CITATION.cff).
+Use [CITATION.cff](CITATION.cff) or GitHub's "Cite this repository" control when referencing this template in research, assurance work, or implementation notes. The citation describes a public reference template and does not imply audit assurance, legal advice, or production readiness.
+
+## Sources
+
+See [docs/REFERENCES.md](docs/REFERENCES.md) for official NIST, BIS, CPMI, and Basel Committee references that inform the control-evidence and tokenized-asset framing.

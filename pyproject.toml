@@ -9,6 +9,34 @@ description = "Verify digital asset control specifications against implementatio
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
+keywords = [
+    "compliance-automation",
+    "control-testing",
+    "digital-assets",
+    "evidence-generation",
+    "evm",
+    "institutional-infrastructure",
+    "reserve-assurance",
+    "risk-controls",
+    "stablecoins",
+    "tokenization",
+    "web3",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Framework :: Pydantic",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Security",
+    "Typing :: Typed",
+]
 dependencies = [
     "typer>=0.12",
     "pyyaml>=6.0",
