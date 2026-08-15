@@ -2,7 +2,7 @@
 
 Verify that digital asset control specifications hold under stress, not just under normal conditions.
 
-[![CI](https://github.com/control-probe/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/control-probe/control-probe/actions/workflows/ci.yml)
+[![CI](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml/badge.svg)](https://github.com/vishnugovind10/control-probe/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/python-3.11%2B-informational)
 ![Control Testing](https://img.shields.io/badge/domain-control%20testing-informational)
@@ -28,7 +28,7 @@ This repository is a public template for engineering teams that need control evi
 ## Quick start
 
 ```bash
-pip install git+https://github.com/control-probe/control-probe.git
+pip install git+https://github.com/vishnugovind10/control-probe.git
 control-probe run --spec specs/reserve_at_par.yaml --adapter fixture --fixture-file tests/fixtures/reserve_pass.json
 ```
 
@@ -136,7 +136,7 @@ Institutional operators should start with [docs/INSTITUTIONAL_READINESS.md](docs
 
 ## Project Tags
 
-`control-testing` `compliance-automation` `digital-assets` `evidence-generation` `evm` `institutional-infrastructure` `reserve-assurance` `risk-controls` `stablecoins` `tokenization` `web3`
+`digital-assets` `tokenization` `stablecoin` `mica` `rwa` `defi-risk` `control-framework` `institutional-finance` `evm` `python` `compliance` `audit` `stress-testing`
 
 ## Limitations
 
